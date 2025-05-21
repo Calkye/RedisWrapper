@@ -19,7 +19,7 @@ const CreateTempUserWithEmailAndPassword = async(username, password)=>{
     const key = `user:${username}`; 
 
     await client.set(key, JSON.stringify(user)), { 
-      EX: 60 * 60 * 48 // 2 days in seconds
+      EX: 60 * 60 * 168 // Temp account will expire in 7 days: Free trial
     }; 
 
     return { success: true, message: "Successfully created Temp User", source: "Redis"}
