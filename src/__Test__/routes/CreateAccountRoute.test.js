@@ -40,7 +40,7 @@ const CreateTempUserWithEmailAndPassword = async(username, password)=>{
 
 const CreateTempAccountMiddleWear = async(req, res, next)=>{
   try{
-    const { username, password} = req.body || {}; 
+    const { username, password} = req.body ?? {}; 
     
     const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
 
@@ -48,10 +48,9 @@ const CreateTempAccountMiddleWear = async(req, res, next)=>{
       return res.status(400).json({message: message})
     }
 
-
-    if(success){ 
-      next(); 
-    }
+    req.body.TempAccount = true;
+     
+    next(); 
   }catch(error){ 
     return res.status(500).json({ 
       error: error.message
@@ -59,19 +58,26 @@ const CreateTempAccountMiddleWear = async(req, res, next)=>{
   }
 }
 
-// app.post(route, CachingMiddleWear, RouteFunction); 
+
 
 app.post('/createAccount', CreateTempAccountMiddleWear, async(req, res)=>{ 
   try{
-    return res.status(200).json({ 
-      message: "Account Created and Cached"
-    })
+    const {username, password, TempAccount} = req.body ?? {}; 
+    if(TempAccount){ 
+      return res.status(200).json({
+        message: "Account Created and Cached"  // THIS must match your test!
+      })
+    }
+
+    // Since It's not a Temp account, Add it to the database. 
+
   }catch(error){ 
     return res.status(500).json({ 
       error: error.message
     })
   }
 })
+
 
 
 

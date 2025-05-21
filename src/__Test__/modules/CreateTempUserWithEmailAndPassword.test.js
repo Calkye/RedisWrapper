@@ -8,11 +8,7 @@ const CreateTempUserWithEmailAndPassword = async(username, password)=>{
   if(!username){ 
     return {success: false, message: "Username is required"}; 
   }; 
-
-  if(!username && password){ 
-    return {success: false, message: "both username and password are required"}
-  }
-
+  
   try{
     const client = await CreateConnectionToRedis(); 
     const user = { 
