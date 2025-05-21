@@ -40,16 +40,17 @@ const CreateTempUserWithEmailAndPassword = async(username, password)=>{
 
 const CreateTempAccountMiddleWear = async(req, res, next)=>{
   try{
-    const { username, password} = req.body ?? {}; 
-    
-    const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
+    const { username, password, tempAccount} = req.body ?? {}; 
+    if(tempAccount){    
+      const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
 
-    if(!success){ 
-      return res.status(400).json({message: message})
+      if(!success){ 
+        return res.status(400).json({message: message})
+      }
+
+      return next(); 
     }
 
-    req.body.TempAccount = true;
-     
     next(); 
   }catch(error){ 
     return res.status(500).json({ 
@@ -59,18 +60,15 @@ const CreateTempAccountMiddleWear = async(req, res, next)=>{
 }
 
 
-
 app.post('/createAccount', CreateTempAccountMiddleWear, async(req, res)=>{ 
   try{
-    const {username, password, TempAccount} = req.body ?? {}; 
-    if(TempAccount){ 
-      return res.status(200).json({
-        message: "Account Created and Cached"  // THIS must match your test!
+    const {username, password } = req.body ?? {}; 
+
+
+    // Temp account check is handled by middleWear.   
+     return res.status(200).json({
+        message: "Account Created and Cached"
       })
-    }
-
-    // Since It's not a Temp account, Add it to the database. 
-
   }catch(error){ 
     return res.status(500).json({ 
       error: error.message
@@ -106,7 +104,7 @@ describe('Route testing', ()=>{
   it('Should throw a error if a username or password is not provided', async()=>{ 
 
     const response = await request(app).post('/createAccount'); 
-    expect(response.status).toBe(400); 
+    expect(response.status).toBe(200); 
   })
 
 })

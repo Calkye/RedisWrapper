@@ -3,17 +3,18 @@ const CreateTempUserWithEmailAndPassword = require('../caching/CreateTempUserWit
 
 const CreateTempAccountMiddleWear = async(req, res, next)=>{
   try{
-    const { username, password} = req.body ?? {}; 
-    
-    const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
+    const { username, password, tempAccount} = req.body ?? {}; 
+    if(tempAccount){    
+      const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
 
-    if(!success){ 
-      return res.status(400).json({message: message})
+      if(!success){ 
+        return res.status(400).json({message: message ?? "Unknown error occured"})
+      }
+
+      return next(); 
     }
 
-
-    
-      next(); 
+    next(); 
   }catch(error){ 
     return res.status(500).json({ 
       error: error.message

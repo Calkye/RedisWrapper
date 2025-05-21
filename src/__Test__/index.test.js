@@ -29,10 +29,11 @@ describe('Intergration testing', ()=>{
   it('Should successfully create a temporary account', async()=>{
     const user = { 
       username: "Test", 
-      password: "test"
+      password: "test", 
+      tempAccount: true,
     } 
     const response = await request(app)
-      .post('/createAccount/Temp')
+      .post('/createAccount')
       .send(user); 
     
     

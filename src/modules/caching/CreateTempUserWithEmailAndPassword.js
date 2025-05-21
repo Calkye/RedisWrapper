@@ -1,7 +1,7 @@
 const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js'); 
 
 
-const CreateTempUserWithEmailAndPassword = async(username, password)=>{  
+const CreateTempUserWithEmailAndPassword = async(username, password, )=>{  
   if(!username && password){ 
     return {success: false, message: "both username and password are required"}
   }

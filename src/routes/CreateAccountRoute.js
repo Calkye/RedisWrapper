@@ -7,18 +7,18 @@ const CreateTempAccountMiddleWear = require('../modules/MiddleWear/CreateTempAcc
 const router = express.Router(); 
 
 
+router.post('/createAccount', CreateTempAccountMiddleWear, async(req, res)=>{ 
+  try{
+    const {username, password } = req.body ?? {}; 
 
-router.post('/createAccount/Temp', CreateTempAccountMiddleWear, async(req, res)=>{ 
-  try{ 
 
-    // For testing only, put in some actual production code later
-    return res.status(200).json({
-      message: "Successfully created a temp account"
-    })
-
+    // Temp account check is handled by middleWear.   
+     return res.status(200).json({
+        message: "Account Created and Cached"
+      })
   }catch(error){ 
     return res.status(500).json({ 
-      error: error.memessage
+      error: error.message
     })
   }
 })
