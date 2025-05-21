@@ -25,8 +25,6 @@ const CreateConnectionToRedis = ()=>{
             RedisClient = null; 
           }; 
         });
-
-        RedisClient = client; 
         
         return resolve(RedisClient); 
       }catch(error){ 

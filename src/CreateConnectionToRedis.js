@@ -23,7 +23,6 @@ const CreateConnectionToRedis = ()=>{
           }; 
         });
 
-        RedisClient = client; 
         
         return resolve(RedisClient); 
       }catch(error){ 

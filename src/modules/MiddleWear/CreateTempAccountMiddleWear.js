@@ -3,7 +3,7 @@ const CreateTempUserWithEmailAndPassword = require('../caching/CreateTempUserWit
 
 const CreateTempAccountMiddleWear = async(req, res, next)=>{
   try{
-    const { username, password} = req.body || {}; 
+    const { username, password} = req.body ?? {}; 
     
     const {success, message, source } = await CreateTempUserWithEmailAndPassword(username, password); 
 
@@ -12,9 +12,8 @@ const CreateTempAccountMiddleWear = async(req, res, next)=>{
     }
 
 
-    if(success){ 
+    
       next(); 
-    }
   }catch(error){ 
     return res.status(500).json({ 
       error: error.message

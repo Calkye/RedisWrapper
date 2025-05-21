@@ -1,15 +1,7 @@
 const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js'); 
 
 
-const CreateTempUserWithEmailAndPassword = async(username, password)=>{ 
-  if(!password){ 
-    return {success: false, message: "Password is required"}; 
-  }
-
-  if(!username){ 
-    return {success: false, message: "Username is required"}; 
-  }; 
-
+const CreateTempUserWithEmailAndPassword = async(username, password)=>{  
   if(!username && password){ 
     return {success: false, message: "both username and password are required"}
   }
@@ -26,11 +18,13 @@ const CreateTempUserWithEmailAndPassword = async(username, password)=>{
 
     const key = `user:${username}`; 
 
-    await client.set(key, JSON.stringify(user)); 
+    await client.set(key, JSON.stringify(user)), { 
+      EX: 60 * 60 * 48 // 2 days in seconds
+    }; 
 
     return { success: true, message: "Successfully created Temp User", source: "Redis"}
   }catch(error){ 
-    throw new Error(error); 
+    throw new Error(error.message || "Unknown error occured"); 
   }
 }
 
