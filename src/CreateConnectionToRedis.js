@@ -15,14 +15,6 @@ const CreateConnectionToRedis = ()=>{
         });                                                                                       
 
         await RedisClient.connect(); 
-
-        setImmediate(async()=>{ 
-          await client.quit(); 
-          if(RedisClient === client){ 
-            RedisClient = null; 
-          }; 
-        });
-
         
         return resolve(RedisClient); 
       }catch(error){ 
