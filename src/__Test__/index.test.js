@@ -1,5 +1,8 @@
+
+const { CreateTokenSession } = require("../modules/MiddleWear/CreateTokenSession.js");  
 const CreateConnectionToRedis = require('../CreateConnectionToRedis.js'); 
 const CreateAccountRoute = require('../routes/CreateAccountRoute.js'); 
+
 const express = require('express'); 
 
 const request = require('supertest');
@@ -19,7 +22,7 @@ describe('Intergration testing', ()=>{
   beforeAll(async()=>{ 
     app = express(); 
     app.use(express.json()); 
-    app.use('/', CreateAccountRoute); // Mount the route on a base path 
+    app.use('/', CreateTokenSession, CreateAccountRoute); // Mount the route on a base path 
     const client = await CreateMongoDbConnection(); 
     const db = await client.db();
     const collections = await db.collections(); 
@@ -33,6 +36,26 @@ describe('Intergration testing', ()=>{
     const client = await CreateConnectionToRedis(); 
     await client.quit(); 
   })
+  it('refreshToken Should successfully be created', async()=>{ 
+    const user = { 
+      username: "test", 
+      password :"test", 
+      email: "test@gmail.com", 
+      tempAccount: false
+    }
+    const response = await request(app)
+      .post('/createAccount')
+      .send(user); 
+
+    
+    console.log('[SET COOKIE]: ', response.headers); 
+    expect(response.headers['set-cookie']).toBeDefined(); 
+    expect(response.headers['set-cookie'][0]).toMatch(/x-refresh-token=/);
+
+
+
+  })
+
 
   it('Should successfully create a temporary account', async()=>{
     const user = { 

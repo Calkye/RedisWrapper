@@ -4,6 +4,9 @@ const morgan = require('morgan')
 
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
 
+// Require custom middlewear 
+const { CreateTokenSession } = require("./src/modules/MiddleWear/CreateTokenSession.js"); 
+
 const app = express(); 
 
 // Middle Wear 
@@ -14,7 +17,7 @@ app.use(morgan('dev'));
 
 // Mount routes with base parth eg /api 
 
-app.use('/api', CreateAccountRoute); 
+app.use('/api', CreateTokenSession, CreateAccountRoute); 
 
 
 // Basic health check route 
