@@ -8,7 +8,7 @@ const CreateToken = (username)=>{
   try{
     return new Promise(async (resolve, reject)=>{ 
       try{ 
-        const Token = jwt.sign({username}, REFRESH_TOKEN_SECRET); 
+        const Token = jwt.sign({username: username}, REFRESH_TOKEN_SECRET); 
 
         return resolve(Token); 
       }catch(error){ 
