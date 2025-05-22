@@ -1,5 +1,7 @@
 const AccountMiddleWear = require('../../modules/MiddleWear/AccountMiddleWear.js'); 
 const CreateAccountRoute = require('../../routes/CreateAccountRoute.js'); 
+const { CreateTokenSession } = require('../../modules/MiddleWear/CreateTokenSession.js'); 
+const cookieParser = require('cookie-parser'); 
 
 const request = require('supertest'); 
 
@@ -7,8 +9,9 @@ const express = require('express');
 
 const app = express(); 
 app.use(express.json()); 
+app.use(cookieParser()); 
 
-app.post('/createAccount', CreateAccountRoute); 
+app.post('/createAccount', CreateTokenSession, CreateAccountRoute); 
 app.post('/verifyAccount', AccountMiddleWear, async(req, res)=>{ 
   try{
     return res.status(200).json({ 
@@ -37,8 +40,14 @@ describe('Account middle wear testing', ()=>{
       .post('/createAccount')
       .send(user); 
 
+
+    const cookie = CreationRes.headers['set-cookie'][0].split(';')[0];
+    console.log('[Cookie]: ', cookie); 
+
+
     const VerificationRes = await request(app)
       .post('/verifyAccount')
+      .set('Cookie', [cookie]) 
       .send(user); 
     
     expect(VerificationRes.status).toBe(200); 

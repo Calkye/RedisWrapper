@@ -2,6 +2,7 @@
 const { CreateTokenSession } = require("../modules/MiddleWear/CreateTokenSession.js");  
 const CreateConnectionToRedis = require('../CreateConnectionToRedis.js'); 
 const CreateAccountRoute = require('../routes/CreateAccountRoute.js'); 
+const cookieParser = require('cookie-parser'); 
 
 const express = require('express'); 
 
@@ -21,7 +22,8 @@ describe('Intergration testing', ()=>{
 
   beforeAll(async()=>{ 
     app = express(); 
-    app.use(express.json()); 
+    app.use(express.json());
+    app.use(cookieParser());  
     app.use('/', CreateTokenSession, CreateAccountRoute); // Mount the route on a base path 
     const client = await CreateMongoDbConnection(); 
     const db = await client.db();
