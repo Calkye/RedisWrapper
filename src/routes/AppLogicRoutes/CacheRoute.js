@@ -1,110 +1,143 @@
-const express = require('express'); 
-const router = express.Router(); 
+const express = require('express');
+const router = express.Router();
 
-const AccountMiddleWear = require('../../modules/MiddleWear/AccountMiddleWear.js'); 
-const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js'); 
+const AccountMiddleWear = require('../../modules/MiddleWear/AccountMiddleWear.js');
+const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js');
 
-router.use(AccountMiddleWear); 
- 
+router.use(AccountMiddleWear); // Adds req.user
 
-router.post('/CacheRoute', async(req, res)=>{
-  const { username } = req.user; 
-  const cacheData = req.body.data;
-  const id = String(req.body.id);  
-  const RedisClient = await CreateConnectionToRedis(); 
-
-  if(!id){ 
-    return res.status(400).json({ 
-      error: "please provide a custom Id tag under req.body.id"
-    }); 
-  }
-
-  try{
-    const Key = `username:${username}:type:data:id:${id}`;
-    const valueToCache = typeof cacheData === 'string' ? cacheData : JSON.stringify(cacheData); 
-    await RedisClient.set(Key, valueToCache);
-
-    return res.status(200).json({ 
-      message: "Successfully Cached data", 
-      Key: Key, 
-      cacheData: cacheData
-    });
-  }catch(error){
-    return res.status(500).json({ 
-      error: error.message
-    }); 
-  }
-});
-
-router.put('/CacheRoute', async(req, res)=>{ 
-  const RedisClient = await CreateConnectionToRedis(); 
-
+// POST - Create new cache entry
+router.post('/CacheRoute', async (req, res) => {
+  const RedisClient = await CreateConnectionToRedis();
   const { username } = req.user;
-  const cacheData = req.body.data; 
-  const id = String(req.body.id); 
-  if(!id) return res.status(400).json({error: "please provide a custom Id tage under req.body.id"})
-  
-  try{  
-    const Key = `username:${username}:type:data:id:${id}`;
-
-    const CurrentData = await RedisClient.get(Key); 
-
-    if(!CurrentData){ 
-      return res.status(400).json({ 
-        error: "data not found"
-      }); 
-    }; 
-
-    const valueToCache = typeof cacheData === 'string' ? cacheData : JSON.stringify(cacheData); 
-    await RedisClient.set(Key, valueToCache);
-    
-    return res.status(200).json({ 
-      message: "Successfully updated cached data", 
-      Key, 
-      cacheData
-    }); 
-  }catch(error){ 
-    return res.status(500).json({ 
-      error: error.message
-    }); 
-  }
-});
-
-
-router.post('/CacheRoute/fetch', async (req, res) => {
-  const RedisClient = await CreateConnectionToRedis(); 
-  const { username } = req.user;
-  const id = String(req.body.id); 
+  const { data, id } = req.body;
 
   if (!id) {
-    return res.status(400).json({
-      error: "please provide a custom Id tag under req.body.id"
-    });
+    return res.status(400).json({ error: "Missing ID" });
   }
 
   try {
-    const Key = `username:${username}:type:data:id:${id}`;
-    const CurrentData = await RedisClient.get(Key);
+    const key = `username:${username}:type:data:id:${id}`;
 
-    if (!CurrentData) {
-      return res.status(404).json({
-        error: "No data found"
-      });
+    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
+    if (!key.startsWith(expectedKeyPrefix)) {
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
-    return res.status(200).json({
-      message: "Found data",
-      id: id,
-      data: JSON.parse(CurrentData) // optionally parse if you stored JSON
-    });
 
-  } catch (error) {
-    return res.status(500).json({
-      error: error.message
+    const value = typeof data === 'string' ? data : JSON.stringify(data);
+    await RedisClient.set(key, value);
+
+    return res.status(200).json({
+      message: "Successfully cached data",
+      key,
+      data
     });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 
+// PUT - Update existing cache entry
+router.put('/CacheRoute', async (req, res) => {
+  const RedisClient = await CreateConnectionToRedis();
+  const { username } = req.user;
+  const { data, id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Missing ID" });
+  }
+
+  try {
+    const key = `username:${username}:type:data:id:${id}`;
+
+    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
+    if (!key.startsWith(expectedKeyPrefix)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
 
-module.exports = router; 
+    const existing = await RedisClient.get(key);
+
+
+
+    if (!existing) {
+      return res.status(404).json({ error: "Data not found" });
+    }
+
+    const value = typeof data === 'string' ? data : JSON.stringify(data);
+    await RedisClient.set(key, value);
+
+    return res.status(200).json({
+      message: "Successfully updated cached data",
+      key,
+      data
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST - Fetch a cache entry
+router.post('/CacheRoute/fetch', async (req, res) => {
+  const RedisClient = await CreateConnectionToRedis();
+  const { username } = req.user;
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Missing ID" });
+  }
+
+  try {
+    const key = `username:${username}:type:data:id:${id}`;
+    const cached = await RedisClient.get(key);
+
+    if (!cached) {
+      return res.status(404).json({ error: "No data found" });
+    }
+
+    return res.status(200).json({
+      message: "Data fetched successfully",
+      id,
+      data: JSON.parse(cached)
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE - Delete a cache entry
+router.delete('/CacheRoute', async (req, res) => {
+  const RedisClient = await CreateConnectionToRedis();
+  const { username } = req.user;
+  const { id } = req.body;
+
+  if (!id) {
+    return res.status(400).json({ error: "Missing ID" });
+  }
+
+  try {
+    const key = `username:${username}:type:data:id:${id}`;
+
+    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
+    if (!key.startsWith(expectedKeyPrefix)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const result = await RedisClient.del(key);
+
+    if (result === 0) {
+      return res.status(404).json({ error: "Key not found or already deleted" });
+    }
+
+    return res.status(200).json({
+      message: "Successfully deleted key",
+      id,
+      key
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+module.exports = router;

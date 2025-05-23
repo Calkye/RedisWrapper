@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 
 const saltrounds = 10 || parseInt(process.env.BCRYPT_ROUNDS); 
 
-const CreateTempUserWithEmailAndPassword = async(username, password, email )=>{
+const CreateTempUserWithEmailAndPassword = async(username, password, email, tempAccount )=>{
   if(!username || !password || !email){ 
     return { success: false, message: "Username, Password and Email are all required"}; 
   }; 
@@ -17,12 +17,21 @@ const CreateTempUserWithEmailAndPassword = async(username, password, email )=>{
 
   try{
     const client = await CreateConnectionToRedis(); 
-    const user = { 
+    const user = tempAccount 
+    ?  { 
       username: username, 
       email: email, 
       password: hashedPassword, 
       type: 'TempAccount', 
       Expires: "7 days",
+      CreatedAt: new Date()
+    }
+    : { 
+      username: username, 
+      email: email, 
+      password: hashedPassword, 
+      type: 'default', 
+      Expires: "32 days",
       CreatedAt: new Date()
     };
 
