@@ -1,29 +1,26 @@
+const { v4: uuidv4 } = require('uuid');
 const express = require('express');
 const router = express.Router();
 
-const AccountMiddleWear = require('../../modules/MiddleWear/AccountMiddleWear.js');
+const AuthWithApiKey = require('../../modules/MiddleWear/AuthWithApiKey.js'); 
 const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js');
 
-router.use(AccountMiddleWear); // Adds req.user
+router.use(AuthWithApiKey); // Adds req.user
 
 // POST - Create new cache entry
 router.post('/CacheRoute', async (req, res) => {
   const RedisClient = await CreateConnectionToRedis();
   const { username } = req.user;
-  const { data, id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ error: "Missing ID" });
-  }
+  const { key: customKey, data, prefix = '' } = req.body; // custom prefix optional
+  const id = customKey || uuidv4();
 
   try {
-    const key = `username:${username}:type:data:id:${id}`;
+    const key = `client:username:${username}:${prefix}${id}`;
+    const expectedKeyPrefix = `client:username:${username}:${prefix}`;
 
-    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
     if (!key.startsWith(expectedKeyPrefix)) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-
 
     const value = typeof data === 'string' ? data : JSON.stringify(data);
     await RedisClient.set(key, value);
@@ -31,7 +28,8 @@ router.post('/CacheRoute', async (req, res) => {
     return res.status(200).json({
       message: "Successfully cached data",
       key,
-      data
+      data,
+      id
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -42,25 +40,21 @@ router.post('/CacheRoute', async (req, res) => {
 router.put('/CacheRoute', async (req, res) => {
   const RedisClient = await CreateConnectionToRedis();
   const { username } = req.user;
-  const { data, id } = req.body;
+  const { data, id, prefix = '' } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: "Missing ID" });
   }
 
   try {
-    const key = `username:${username}:type:data:id:${id}`;
+    const key = `client:username:${username}:${prefix}${id}`;
+    const expectedKeyPrefix = `client:username:${username}:${prefix}`;
 
-    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
     if (!key.startsWith(expectedKeyPrefix)) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-
     const existing = await RedisClient.get(key);
-
-
-
     if (!existing) {
       return res.status(404).json({ error: "Data not found" });
     }
@@ -82,14 +76,14 @@ router.put('/CacheRoute', async (req, res) => {
 router.post('/CacheRoute/fetch', async (req, res) => {
   const RedisClient = await CreateConnectionToRedis();
   const { username } = req.user;
-  const { id } = req.body;
+  const { id, prefix = '' } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: "Missing ID" });
   }
 
   try {
-    const key = `username:${username}:type:data:id:${id}`;
+    const key = `client:username:${username}:${prefix}${id}`;
     const cached = await RedisClient.get(key);
 
     if (!cached) {
@@ -110,22 +104,21 @@ router.post('/CacheRoute/fetch', async (req, res) => {
 router.delete('/CacheRoute', async (req, res) => {
   const RedisClient = await CreateConnectionToRedis();
   const { username } = req.user;
-  const { id } = req.body;
+  const { id, prefix = '' } = req.body;
 
   if (!id) {
     return res.status(400).json({ error: "Missing ID" });
   }
 
   try {
-    const key = `username:${username}:type:data:id:${id}`;
+    const key = `client:username:${username}:${prefix}${id}`;
+    const expectedKeyPrefix = `client:username:${username}:${prefix}`;
 
-    const expectedKeyPrefix = `username:${req.user.username}:type:data:id:`;
     if (!key.startsWith(expectedKeyPrefix)) {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     const result = await RedisClient.del(key);
-
     if (result === 0) {
       return res.status(404).json({ error: "Key not found or already deleted" });
     }
@@ -137,6 +130,46 @@ router.delete('/CacheRoute', async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ error: error.message });
+  }
+});
+
+// POST - Get all keys under a user prefix
+router.post('/CacheRoute/all', async (req, res) => {
+  const redisClient = await CreateConnectionToRedis();
+  const { username } = req.user;
+  const { key: prefix = '' } = req.body; // prefix to scan for
+
+  try {
+    const pattern = `client:username:${username}:${prefix}*`;
+
+    let cursor = '0'; 
+    const keys = [];
+
+    do {
+      const reply = await redisClient.scan(cursor, {
+        MATCH: pattern,
+        COUNT: 100
+      });
+
+      cursor = reply.cursor;
+      keys.push(...reply.keys);
+    } while (cursor !== '0');
+
+    if (keys.length === 0) {
+      return res.json([]);
+    }
+
+    const values = await Promise.all(
+      keys.map(async key => {
+        const value = await redisClient.get(key);
+        return value ? JSON.parse(value) : null;
+      })
+    );
+
+    return res.status(200).json(values.filter(Boolean));
+  } catch (err) {
+    console.error('[ERROR in /CacheRoute/all]:', err);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
 

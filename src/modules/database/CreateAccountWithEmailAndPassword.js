@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 
 const saltrounds = 10; 
 
-const CreateAccountWithEmailAndPassword = async(username, password, email, tempAccount)=>{ 
+const CreateAccountWithEmailAndPassword = async(username, password, email, tempAccount, apiKey)=>{ 
   if(!username || !password || !email){ 
     throw new Error("Username, Password and Email are all required");  
   }
@@ -25,6 +25,7 @@ const CreateAccountWithEmailAndPassword = async(username, password, email, tempA
         username: username, 
         email: email, 
         password: hashedPassword, 
+        apiKey: apiKey, 
         type: 'TempAccount', 
         Expires: "7 days",
         CreatedAt: new Date()
@@ -32,7 +33,8 @@ const CreateAccountWithEmailAndPassword = async(username, password, email, tempA
       : {
         username: username,
         email: email,  
-        password: hashedPassword, 
+        password: hashedPassword,
+        apiKey: apiKey,  
         type: 'default', 
         Expires: "32 days",
         CreatedAt: new Date()
