@@ -4,11 +4,12 @@ const express = require('express');
 const CreateTempAccountMiddleWear = require('../modules/MiddleWear/CreateTempAccountMiddleWear.js'); 
 
 const CreateAccountWithEmailAndPassword = require('../modules/database/CreateAccountWithEmailAndPassword.js');
+const { CreateTokenSession } = require('../modules/MiddleWear/CreateTokenSession.js'); 
 
 const router = express.Router(); 
 
 
-router.post('/createAccount', CreateTempAccountMiddleWear, async(req, res)=>{ 
+router.post('/createAccount', CreateTokenSession, CreateTempAccountMiddleWear, async(req, res)=>{ 
   try{
     const {username, password, tempAccount, email } = req.body ?? {}; 
     // Save account to database now... 
@@ -24,7 +25,7 @@ router.post('/createAccount', CreateTempAccountMiddleWear, async(req, res)=>{
       error: error.message
     })
   }
-})
+}); 
 
 
 

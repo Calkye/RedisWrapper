@@ -1,11 +1,11 @@
 const express = require('express'); 
 const cors = require('cors'); 
-const morgan = require('morgan')
+const morgan = require('morgan'); 
+const cookieParser = require('cookie-parser'); 
 
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
-
+const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
 // Require custom middlewear 
-const { CreateTokenSession } = require("./src/modules/MiddleWear/CreateTokenSession.js"); 
 
 const app = express(); 
 
@@ -13,11 +13,12 @@ const app = express();
 app.use(cors()); 
 app.use(express.json()); 
 app.use(morgan('dev')); 
-
+app.use(cookieParser()); 
 
 // Mount routes with base parth eg /api 
 
-app.use('/api', CreateTokenSession, CreateAccountRoute); 
+app.use('/api', CreateAccountRoute); 
+app.use('/api', VerifyAccountRoute); 
 
 
 // Basic health check route 
