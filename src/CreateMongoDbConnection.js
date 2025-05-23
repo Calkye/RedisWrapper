@@ -20,10 +20,9 @@ const CreateMongoDbConnection = () => {
         }
 
 
-        client = new MongoClient(Uri); 
+        mongoClient = new MongoClient(Uri); 
       
-        await client.connect(); 
-        mongoClient = client; 
+        await mongoClient.connect(); 
 
         resolve(mongoClient); 
 

@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
 const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
-// Require custom middlewear 
+const CacheRoute = require('./src/routes/AppLogicRoutes/CacheRoute.js'); 
 
 const app = express(); 
 
@@ -19,7 +19,7 @@ app.use(cookieParser());
 
 app.use('/api', CreateAccountRoute); 
 app.use('/api', VerifyAccountRoute); 
-
+app.use('/api/app', CacheRoute); 
 
 // Basic health check route 
 app.get('/', (req, res)=>{
