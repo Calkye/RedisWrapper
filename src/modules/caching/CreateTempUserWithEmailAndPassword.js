@@ -24,7 +24,8 @@ const CreateTempUserWithEmailAndPassword = async(username, password, email, temp
       password: hashedPassword, 
       type: 'TempAccount', 
       Expires: "7 days",
-      CreatedAt: new Date()
+      CreatedAt: new Date(),
+      email_verified: false
     }
     : { 
       username: username, 
@@ -32,7 +33,8 @@ const CreateTempUserWithEmailAndPassword = async(username, password, email, temp
       password: hashedPassword, 
       type: 'default', 
       Expires: "32 days",
-      CreatedAt: new Date()
+      CreatedAt: new Date(),
+      email_verified: false
     };
 
     const key = `user:${username}`; 
