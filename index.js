@@ -1,3 +1,4 @@
+require('dotenv').config(); 
 const express = require('express'); 
 const cors = require('cors'); 
 const morgan = require('morgan'); 
@@ -10,13 +11,15 @@ const PaymentRoutes = require('./src/routes/PaymentRoutess.js');
 
 
 
+
 const app = express(); 
 
 const { attachAccountType, rateLimiterSelector } = require('./src/modules/MiddleWear/rateLimit.js'); 
 
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
 // Middle Wear 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: frontendUrl,
   credentials: true
 }));
 
