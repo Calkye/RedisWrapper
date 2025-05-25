@@ -41,9 +41,10 @@ const CreateAccountWithEmailAndPassword = async(username, password, email, tempA
       };
 
 
-    await UserCollection.insertOne(user); 
+    const newUser = await UserCollection.insertOne(user); 
+    const insertedUser = await UserCollection.findOne({_id: newUser.insertedId})
     
-    return {status: 201, message: "Successfully created new user", source: "database"};  
+    return {status: 201, message: "Successfully created new user", source: "database", result: insertedUser};  
   }catch(error){ 
     throw new Error(error.message || "Unknown error occured"); 
   }
