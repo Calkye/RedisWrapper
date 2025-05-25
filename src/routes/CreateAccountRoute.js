@@ -23,11 +23,13 @@ router.post('/createAccount', CreateTokenSession, CreateTempAccountMiddleWear, a
 
     await sendVerificationEmail(username, email);
     const NewUser = await CreateAccountWithEmailAndPassword(username, password, email, tempAccount, apiKey); 
-    
+    const user = NewUser.result; 
+
     if (NewUser.status === 201) {
       return res.status(201).json({
         message: NewUser.message, 
-        apiKey
+        apiKey, 
+        user: user
       });
     }
 

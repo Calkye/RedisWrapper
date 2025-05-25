@@ -25,7 +25,7 @@ const CreateToken = (username)=>{
 
 const CreateTokenSession = async(req, res, next)=>{ 
   try{
-    const { username, tempAccount } = req.body ?? {};
+    const { username, tempAccount } = req.body ?? req.user ?? {};
     const Token = await CreateToken(username);
     if(tempAccount){ 
       res.cookie('x-refresh-token', Token, { 

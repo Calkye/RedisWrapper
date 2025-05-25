@@ -6,20 +6,29 @@ const cookieParser = require('cookie-parser');
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
 const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
 const CacheRoute = require('./src/routes/AppLogicRoutes/CacheRoute.js'); 
+const PaymentRoutes = require('./src/routes/PaymentRoutess.js'); 
+
+
 
 const app = express(); 
 
+const { attachAccountType, rateLimiterSelector } = require('./src/modules/MiddleWear/rateLimit.js'); 
+
 // Middle Wear 
-app.use(cors()); 
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+
 app.use(express.json()); 
 app.use(morgan('dev')); 
 app.use(cookieParser()); 
 
 // Mount routes with base parth eg /api 
-
 app.use('/api', CreateAccountRoute); 
 app.use('/api', VerifyAccountRoute); 
-app.use('/api/app', CacheRoute); 
+app.use('/api/app', attachAccountType, rateLimiterSelector, CacheRoute); 
+app.use('/api/payments', PaymentRoutes); 
 
 // Basic health check route 
 app.get('/', (req, res)=>{
