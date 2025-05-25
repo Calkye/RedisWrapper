@@ -1,5 +1,7 @@
+require('dotenv').config(); 
+const stripeKey = process.env.STRIPE_API_KEY; 
 const Stripe = require('stripe');
-const stripe = Stripe('sk_test_51RSEcGRK3iVe1gRezdaq7yye1SH7VdA1jy9OfR3lmrUH0zxN8mVT3lM13ZD6OlNg2yiQabwYvPaqrXXBQjkiOQUb00S4rw9Xsd'); // test key only
+const stripe = Stripe(stripeKey); // test key only
 const express = require('express'); 
 const router = express.Router(); 
 const CreateMongoDbConnection = require('../CreateMongoDbConnection.js'); 
