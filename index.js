@@ -29,6 +29,14 @@ app.options('*', cors({
   credentials: true
 }));
 
+const originalUse = app.use;
+
+app.use = function (...args) {
+  console.log("Using route:", args[0]);
+  return originalUse.apply(app, args);
+};
+
+
 
 app.use(helmet());
 app.use(express.json()); 
