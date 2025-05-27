@@ -7,6 +7,7 @@ const router = express.Router();
 const CreateMongoDbConnection = require('../CreateMongoDbConnection.js'); 
 const { token } = require('morgan');
 
+const backendurl = process.env.TOKEN_ADDRESS
 
 router.post('/create-checkout-session', async (req, res) => {
   try {
@@ -26,8 +27,8 @@ router.post('/create-checkout-session', async (req, res) => {
           quantity: 1,
         }
       ],
-      success_url: 'http://localhost:5173/checkout?session_id={CHECKOUT_SESSION_ID}',
-      cancel_url: 'http://localhost:3000/cancel',
+      success_url: `${backendurl}/checkout?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${backendurl}/cancel`,
     });
 
     res.json({ url: session.url, sessionId: session.id });
