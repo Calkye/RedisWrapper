@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors'); 
 const morgan = require('morgan'); 
 const cookieParser = require('cookie-parser'); 
+const helmet = require('helmet');
 
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
 const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
@@ -23,9 +24,13 @@ app.use(cors({
   credentials: true
 }));
 
+
+app.use(helmet());
 app.use(express.json()); 
 app.use(morgan('dev')); 
 app.use(cookieParser()); 
+
+app.set('trust proxy', 1); // Trust first proxy (Railway/load balancer)
 
 // Mount routes with base parth eg /api 
 app.use('/api', CreateAccountRoute); 
@@ -58,3 +63,5 @@ app.listen(port, ()=>{
 })
 
 
+
+module.exports = app; 

@@ -1,53 +1,28 @@
+
+const rateLimit = require('express-rate-limit');
 const express = require('express'); 
+
 const router = express.Router(); 
 
-const AccountMiddleWear = require('../modules/MiddleWear/AccountMiddleWear.js'); 
-const { CreateToken } = require('../modules/MiddleWear/CreateTokenSession.js'); 
-const VerifyAccountWithEmailAndPassword = require("../modules/database/VerifyAccountWithEmailAndPassword.js"); 
-const LoginUserWithEmailAndPassword = require('../modules/database/LoginUserWithEmailAndPassword.js'); 
+router.use(rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes 
+  max: 5, 
+  message: {error: "Too many requests. Please try again later"},
+  standardHeaders: true, 
+  legacyHeaders: false
+})); 
 
-router.post('/verifyAccount', AccountMiddleWear, async(req, res)=>{ 
-  // Now check the details on the database, verify the username and password match before proceeding. 
-  const {
-    username, 
-    password, 
-    email
-  } = req.body;
-  const {success, status, message, UserData} = await VerifyAccountWithEmailAndPassword(username, email, password); 
- 
- 
-  if(!success){ 
-    return res.status(status).json({
-      error: message
-    }); 
-  }
+const AuthAccountMiddleWare = require('../modules/MiddleWear/AuthAccountMiddleWare.js'); 
 
-  return res.status(200).json({ 
-    user: UserData, 
-    message: message
-  }); 
-})
 
-router.post('/loginAccount', async(req, res)=>{
+router.post('/loginAccount', AuthAccountMiddleWare, async(req, res)=>{
   try{
-    const { 
-      username, 
-      password, 
-      email
-    } = req.body; 
-    const { success, status, message, user} = await LoginUserWithEmailAndPassword(username, email, password); 
-    const token = await CreateToken(username); 
-    res.header('x-refresh-token', token); 
-    req.user = user; 
-
-
-    if(!success){ 
-      return res.status(status).json({error: message}); 
-    }
-    return res.status(status).json({ 
-      message: message, 
-      user: user, 
-      refreshToken: token
+    // Since Auth Account middleWare attaches user data, we can access both redis data and mongoDb data. 
+    
+    return res.status(200).json({ 
+      message: "Successfully logged in", 
+      redis_user: req.user.redis_user, 
+      user: req.user
     }); 
   }catch(error){ 
     console.error('[ERROR]: ', error); 

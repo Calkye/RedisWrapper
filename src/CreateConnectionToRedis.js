@@ -10,9 +10,15 @@ const CreateConnectionToRedis = ()=>{
       try{
         if(RedisClient) return resolve(RedisClient); 
 
-        const client = RedisClient = createClient({ 
-          url: process.env.REDIS_URL
-        });                                                                                       
+        RedisClient = createClient({
+          username: process.env.REDIS_USERNAME,
+          password: process.env.REDIS_PASSWORD,
+          socket: {
+              host: process.env.REDIS_HOST,
+              port: process.env.REDIS_PORT,
+              tls: {}
+          }
+        });                                                                                      
 
         await RedisClient.connect(); 
         
@@ -29,9 +35,16 @@ const CreateConnectionToRedis = ()=>{
       if(RedisClient !== null){ 
         return resolve(RedisClient); 
       }
+      
       RedisClient = createClient({
-        url: process.env.REDIS_URL
-      }); 
+        username: process.env.REDIS_USERNAME,
+        password: process.env.REDIS_PASSWORD,
+        socket: {
+            host: process.env.REDIS_HOST,
+            port: process.env.REDIS_PORT, 
+            tls: {}
+        }
+      });
 
       await RedisClient.connect();
 

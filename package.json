@@ -1,11 +1,14 @@
 {
   "name": "caching",
   "version": "1.0.0",
+  "engines": {
+    "node": "23.6.1"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest .",
-    "dev": "nodemon index.js", 
+    "test": "jest . --detectOpenHandles",
+    "dev": "nodemon index.js",
     "build": "node index.js"
   },
   "keywords": [],
@@ -15,14 +18,19 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.16.0",
     "morgan": "^1.10.0",
     "redis": "^5.0.1",
     "resend": "^4.5.1",
     "stripe": "^18.1.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "validator": "^13.15.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "dotenv": "^16.5.0",
