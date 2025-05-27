@@ -4,18 +4,18 @@ const Stripe = require('stripe');
 const stripe = Stripe(stripeKey); // test key only
 const express = require('express'); 
 const router = express.Router(); 
-const CreateMongoDbConnection = require('../CreateMongoDbConnection.js'); 
-const { token } = require('morgan');
+const CreateMongoDbConnection = require('../CreateMongoDbConnection.js');
+const AuthAccountMiddleWare = require('../modules/MiddleWear/AuthAccountMiddleWare.js'); 
 
 const backendurl = `${process.env.TOKEN_ADDRESS}/api/payments`
+const USER_COLLECTION = process.env.USER_COLLECTION || 'Users'; 
 
-router.post('/create-checkout-session', async (req, res) => {
+router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) => {
+  const client = await CreateMongoDbConnection(); 
+  const db = await client.db(); 
+  const UserCollection = await db.collection(USER_COLLECTION);
+
   try {
-    const tokenHeader = req.headers['authorization'];
-    if (!tokenHeader) {
-      return res.status(401).json({ error: 'Missing Authorization header' });
-    }
-
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -29,6 +29,10 @@ router.post('/create-checkout-session', async (req, res) => {
       cancel_url: `${backendurl}/cancel`,
     });
 
+    const { username, email } = req.user; 
+    await UserCollection.updateOne({username, email}, {$set: {
+      PaymentSession: session.id
+    }}); 
     res.json({ url: session.url, sessionId: session.id });
   } catch (err) {
     console.error('Stripe error:', err);
@@ -37,7 +41,16 @@ router.post('/create-checkout-session', async (req, res) => {
 });
 
 router.get('/check-session', async (req, res) => {
-  const sessionId = req.query.session_id;
+  const sessionId = req.query.session_id; 
+
+  const client = await CreateMongoDbConnection(); 
+  const db = await client.db(); 
+  const UserCollection = await db.collection(USER_COLLECTION);
+
+  const UserData = await UserCollection.findOne({PaymentSession: sessionId}); 
+  if(!UserData) return res.status(400).json({error: "Invalid credentials"});
+
+  
   if (!sessionId) {
     return res.status(400).json({ error: 'Missing session_id query param' });
   }
@@ -48,28 +61,25 @@ router.get('/check-session', async (req, res) => {
 
     // session.payment_status can be 'paid' or 'unpaid'
     if (session.payment_status === 'paid') {
-      const client = await CreateMongoDbConnection(); 
       const tokenHeader = req.headers['authorization'];
-      if (!tokenHeader) {
-        return res.status(401).json({ error: 'Missing Authorization header' });
-      }
+      const { apikey } = UserData; 
+      const token = tokenHeader 
+      ? tokenHeader.replace(/Bearer\s/i, '').trim()
+      : apikey; 
 
-      const token = tokenHeader.replace(/Bearer\s/i, '').trim(); // more robust
-
-      const db = await client.db(); 
-      const userCollection = await db.collection('Users'); 
-
-      const UserData = await userCollection.findOne({ apiKey: token }); 
       if(UserData){ 
         const expiresDate = new Date();
         expiresDate.setDate(expiresDate.getDate() + 32);
         
-        await userCollection.updateOne(
-          {apiKey: token}, 
-          {$set: {
+        await UserCollection.updateOne({apiKey: token}, {
+          $set: {
             type: "Tier 1",
             expires: expiresDate
-          }}
+          }, 
+          $unset: {PaymentSession: ""}
+        }, 
+
+
         ); 
       }
       return res.status(200).json({ message: 'Payment successful', session });
