@@ -7,7 +7,7 @@ const router = express.Router();
 const CreateMongoDbConnection = require('../CreateMongoDbConnection.js'); 
 const { token } = require('morgan');
 
-const backendurl = process.env.TOKEN_ADDRESS
+const backendurl = `${process.env.TOKEN_ADDRESS}/api/payments`
 
 router.post('/create-checkout-session', async (req, res) => {
   try {
@@ -15,9 +15,7 @@ router.post('/create-checkout-session', async (req, res) => {
     if (!tokenHeader) {
       return res.status(401).json({ error: 'Missing Authorization header' });
     }
-
-
-
+    
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
