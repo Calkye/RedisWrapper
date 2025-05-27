@@ -72,7 +72,7 @@ router.post('/createAccount', CreateAccountWithRedisMiddleWare, async(req, res)=
   const hashedPassword = await hashPassword(password); 
   const normalisedEmail = email.toLowerCase(); 
 
-
+  const parsedData = JSON.parse(req.user_redis); 
 
   const newUser = await UserCollection.insertOne({ 
     username: username, 
@@ -80,7 +80,7 @@ router.post('/createAccount', CreateAccountWithRedisMiddleWare, async(req, res)=
     password: hashedPassword, 
     tempAccount: tempAccount === true ? true : false,
     type: "default", 
-    redis_user: req.user_redis
+    redis_user: parsedData
   });
 
   await sendVerificationEmail(username, email); 
