@@ -24,18 +24,10 @@ app.use(cors({
   credentials: true
 }));
 
-app.options('*', cors({
-  origin: frontendUrl,
-  credentials: true
-}));
-
-const originalUse = app.use;
-
-app.use = function (...args) {
-  console.log("Using route:", args[0]);
-  return originalUse.apply(app, args);
-};
-
+// app.options('/api/*', cors({
+//   origin: frontendUrl,
+//   credentials: true
+// }));
 
 
 app.use(helmet());
