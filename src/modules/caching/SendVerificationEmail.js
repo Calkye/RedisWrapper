@@ -15,7 +15,7 @@ const sendVerificationEmail = async(username, email)=>{
     EX: 60 * 15 // 15 minutes
   }); 
 
-  const link = `${Address}/api/verify-email?token=${token}`;
+const link = `${Address.replace(/\/$/, '')}/api/verify-email?token=${token}`;
   const subject = 'Verify your waterbase account'; 
   const body = `
   <p>Click the link to verify your email:</p><a href="${link}">${link}</a>`;
