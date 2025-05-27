@@ -1,6 +1,9 @@
 {
   "name": "caching",
   "version": "1.0.0",
+  "engines": {
+    "node": "23.6.1"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
