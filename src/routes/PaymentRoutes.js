@@ -7,7 +7,7 @@ const router = express.Router();
 const CreateMongoDbConnection = require('../CreateMongoDbConnection.js');
 const AuthAccountMiddleWare = require('../modules/MiddleWear/AuthAccountMiddleWare.js'); 
 
-const backendurl = `${process.env.TOKEN_ADDRESS}/api/payments`
+const frontendUrl = `${process.env.FRONTEND_URL}`
 const USER_COLLECTION = process.env.USER_COLLECTION || 'Users'; 
 
 router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) => {
@@ -25,15 +25,16 @@ router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) 
           quantity: 1,
         }
       ],
-      success_url: `${backendurl}/check-session?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${backendurl}/cancel`,
+      success_url: `${frontendUrl}/checkout?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/cancel`,
     });
 
     const { username, email } = req.user; 
     await UserCollection.updateOne({username, email}, {$set: {
       PaymentSession: session.id
-    }}); 
-    res.json({ url: session.url, sessionId: session.id });
+    }});
+
+    return res.status(200).json({ url: session.url, sessionId: session.id });
   } catch (err) {
     console.error('Stripe error:', err);
     res.status(500).json({ error: 'Stripe session failed', raw: err.message });
@@ -59,7 +60,6 @@ router.get('/check-session', async (req, res) => {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
     
-
     // session.payment_status can be 'paid' or 'unpaid'
     if (session.payment_status === 'paid') {
       const tokenHeader = req.headers['authorization'];
@@ -79,8 +79,6 @@ router.get('/check-session', async (req, res) => {
           }, 
           $unset: {PaymentSession: ""}
         }, 
-
-
         ); 
       }
       return res.status(200).json({ message: 'Payment successful', session });

@@ -24,10 +24,6 @@ app.use(cors({
   credentials: true
 }));
 
-// app.options('/api/*', cors({
-//   origin: frontendUrl,
-//   credentials: true
-// }));
 
 
 app.use(helmet());
