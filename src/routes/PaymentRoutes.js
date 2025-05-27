@@ -48,6 +48,7 @@ router.get('/check-session', async (req, res) => {
   const UserCollection = await db.collection(USER_COLLECTION);
 
   const UserData = await UserCollection.findOne({PaymentSession: sessionId}); 
+
   if(!UserData) return res.status(400).json({error: "Invalid credentials"});
 
   
