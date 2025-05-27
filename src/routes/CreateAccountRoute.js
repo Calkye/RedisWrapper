@@ -72,7 +72,7 @@ router.post('/createAccount', CreateAccountWithRedisMiddleWare, async(req, res)=
   const hashedPassword = await hashPassword(password); 
   const normalisedEmail = email.toLowerCase(); 
 
-  const parsedData = JSON.parse(req.user_redis); 
+  const parsedData = JSON.stringify(req.user_redis); 
 
   const newUser = await UserCollection.insertOne({ 
     username: username, 
