@@ -16,7 +16,7 @@ const CreateMongoDbConnection = () => {
         }
         if(!MemoryServer){ 
           MemoryServer = await MongoMemoryServer.create();  
-          Uri = await MemoryServer.getUri();  
+          Uri = MemoryServer.getUri();  
         }
 
 
@@ -24,10 +24,10 @@ const CreateMongoDbConnection = () => {
       
         await mongoClient.connect(); 
 
-        resolve(mongoClient); 
+        return resolve(mongoClient); 
 
       }catch(error){ 
-        return resolve(new Error(error.message || "Unknown error occured"))
+        return reject(new Error(error.message));
       }
 
     })
@@ -52,9 +52,9 @@ const CreateMongoDbConnection = () => {
 
       mongoClient = client;
 
-      resolve(mongoClient);
+      return resolve(mongoClient);
     } catch (error) {
-      reject(new Error(error.message || 'Unknown error occurred'));
+      return reject(new Error(error.message));
     }
   });
 };

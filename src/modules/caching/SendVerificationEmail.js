@@ -23,7 +23,7 @@ const sendVerificationEmail = async(username, email)=>{
 
 
 const sendApiEmail = async(email, apiKey)=>{
-
+  console.debug('[DEBUG EMAIL SENT]: ', apiKey); 
   const subject = `Successfully Verified waterbase account`; 
   const body = ` 
   <p>Thank you for signing up to Waterbase, Here is your Api Key: </p>

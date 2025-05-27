@@ -2,10 +2,10 @@ const { v4: uuidv4 } = require('uuid');
 const express = require('express');
 const router = express.Router();
 
-const AuthWithApiKey = require('../../modules/MiddleWear/AuthWithApiKey.js'); 
+const AuthAccountMiddleWare = require('../../modules/MiddleWear/AuthAccountMiddleWare.js'); 
 const CreateConnectionToRedis = require('../../CreateConnectionToRedis.js');
 
-router.use(AuthWithApiKey); // Adds req.user
+router.use(AuthAccountMiddleWare); // Adds req.user
 
 // POST - Create new cache entry
 router.post('/CacheRoute', async (req, res) => {
