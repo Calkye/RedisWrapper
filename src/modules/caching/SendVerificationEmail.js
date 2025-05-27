@@ -6,6 +6,7 @@ const VERIFICATION_SECRET = process.env.EMAIL_VERIFY_SECRET || "631811e442f41ef2
 
 const sendEmail = require('../sendEmail.js'); 
 
+const Address = process.env.TOKEN_ADDRESS;
 
 const sendVerificationEmail = async(username, email)=>{ 
   const token = jwt.sign({ username, email }, VERIFICATION_SECRET); 
@@ -14,7 +15,7 @@ const sendVerificationEmail = async(username, email)=>{
     EX: 60 * 15 // 15 minutes
   }); 
 
-  const link = `http://localhost:3000/api/verify-email?token=${token}`;
+  const link = `${Address}/api/verify-email?token=${token}`;
   const subject = 'Verify your waterbase account'; 
   const body = `
   <p>Click the link to verify your email:</p><a href="${link}">${link}</a>`;
