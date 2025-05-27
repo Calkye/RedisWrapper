@@ -16,7 +16,7 @@ const CreateConnectionToRedis = ()=>{
           socket: {
               host: process.env.REDIS_HOST,
               port: process.env.REDIS_PORT,
-              tls: true
+              tls: {}
           }
         });                                                                                      
 
@@ -42,7 +42,7 @@ const CreateConnectionToRedis = ()=>{
         socket: {
             host: process.env.REDIS_HOST,
             port: process.env.REDIS_PORT, 
-            tls: true
+            tls: {}
         }
       });
 
