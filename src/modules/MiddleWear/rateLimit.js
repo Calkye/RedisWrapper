@@ -5,6 +5,7 @@ const defaultAccountLimiter = rateLimit({
   windowMs: 7 * 24 * 60 * 60 * 1000,
   max: 2500,
   message: { error: "Rate limit exceeded: 2,500 requests per week" },
+  keyGenerator: (req) => req.headers['authorization'] || req.ip,
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -14,6 +15,7 @@ const trialAccountLimiter = rateLimit({
   max: 1000,
   message: { error: "Rate limit exceeded: 1,000 requests per week" },
   standardHeaders: true,
+  keyGenerator: (req) => req.headers['authorization'] || req.ip,
   legacyHeaders: false,
 });
 
@@ -22,6 +24,7 @@ const tier1AccountLimit = rateLimit({
   max: 4500, 
   message: { error: "Rate limit exceeded: 4500 requets per week"}, 
   standardHeaders: true, 
+  keyGenerator: (req) => req.headers['authorization'] || req.ip,
   legacyHeaders: false, 
 }); 
 
