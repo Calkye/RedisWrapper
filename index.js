@@ -8,7 +8,7 @@ const helmet = require('helmet');
 const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js'); 
 const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
 const CacheRoute = require('./src/routes/AppLogicRoutes/CacheRoute.js'); 
-const PaymentRoutes = require('./src/routes/PaymentRoutess.js'); 
+const PaymentRoutes = require('./src/routes/PaymentRoutes.js'); 
 
 
 
@@ -17,7 +17,7 @@ const app = express();
 
 const { attachAccountType, rateLimiterSelector } = require('./src/modules/MiddleWear/rateLimit.js'); 
 
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+const frontendUrl = process.env.FRONTEND_URL
 // Middle Wear 
 app.use(cors({
   origin: frontendUrl,
