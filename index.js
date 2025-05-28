@@ -9,7 +9,9 @@ const CreateAccountRoute = require('./src/routes/CreateAccountRoute.js');
 const VerifyAccountRoute = require('./src/routes/VerifyAccountRoute.js'); 
 const CacheRoute = require('./src/routes/AppLogicRoutes/CacheRoute.js'); 
 const PaymentRoutes = require('./src/routes/PaymentRoutes.js'); 
+const StripePromoCodeRoute = require('./src/routes/stripePromoCodeRoute.js'); 
 
+const AuthAccountMiddleWare = require("./src/modules/MiddleWear/AuthAccountMiddleWare.js"); 
 
 
 
@@ -38,6 +40,7 @@ app.use('/api', CreateAccountRoute);
 app.use('/api', VerifyAccountRoute); 
 app.use('/api/app', attachAccountType, rateLimiterSelector, CacheRoute); 
 app.use('/api/payments', PaymentRoutes); 
+app.use('/api/stripe', StripePromoCodeRoute)
 
 // Basic health check route 
 app.get('/', (req, res)=>{
