@@ -16,19 +16,26 @@ router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) 
   const client = await CreateMongoDbConnection(); 
   const db = await client.db(); 
   const UserCollection = await db.collection(USER_COLLECTION);
-  const PromoCodeTrackingCollection = await db.collection(PROMOS_CODE_TRACKING_COLLECTION); 
-  
-  const CommissionCode = req.body.commissionCode; 
-  const CommissionCodeData = await PromoCodeTrackingCollection.findOne({ 
-    code: CommissionCode
-  }); 
-  const commissionAmount = Math.floor(2000 * 0.3)
-  const CommisionCodeOwner = await UserCollection.findOne({username: CommissionCodeData.createdBy}); 
+  let PromoCodeTrackingCollection; 
+  let CommissionCode; 
+  let CommissionCodeData; 
+  let commissionAmount; 
+  let CommisionCodeOwner; 
 
 
   try {
     let session; 
-    if(CommissionCodeData?.isActive){ 
+    if(CommissionCodeData?.isActive){        
+          PromoCodeTrackingCollection = await db.collection(PROMOS_CODE_TRACKING_COLLECTION); 
+          
+          CommissionCode = req.body.commissionCode; 
+          CommissionCodeData = await PromoCodeTrackingCollection.findOne({ 
+            code: CommissionCode
+          }); 
+          commissionAmount = Math.floor(2000 * 0.3)
+          CommisionCodeOwner = await UserCollection.findOne({username: CommissionCodeData.createdBy}); 
+
+      
         session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'subscription',
@@ -39,7 +46,7 @@ router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) 
           }
         ],
         subscription_data: { 
-          application_fee_percent: 30,
+          application_fee_percent: 70,
           transfer_data: { 
             destination: CommisionCodeOwner?.stripeAccountId || ''
           }
@@ -79,7 +86,7 @@ router.post('/create-checkout-session', AuthAccountMiddleWare, async (req, res) 
 
         },
         success_url: `${frontendUrl}/checkout?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${frontendUrl}/cancel`,
+        cancel_url: `${frontendUrl}/profile`,
       });
     }
 

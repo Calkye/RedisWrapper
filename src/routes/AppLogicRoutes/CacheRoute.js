@@ -166,7 +166,7 @@ router.post('/CacheRoute/all', async (req, res) => {
       })
     );
 
-    return res.status(200).json(values.filter(Boolean));
+    return res.status(200).json({data: values.filter(Boolean), prefix: prefix});
   } catch (err) {
     console.error('[ERROR in /CacheRoute/all]:', err);
     return res.status(500).json({ error: 'Internal Server Error' });

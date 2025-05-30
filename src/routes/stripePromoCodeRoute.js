@@ -23,22 +23,23 @@ router.post('/create-commission-code', AuthAccountMiddleWare, async (req, res) =
   const UserCollection = db.collection(USER_COLLECTION);
 
   try {
+    const newCommissionCode = `${username.toUpperCase()}_REF`;
+
+
     // Check if user already has a commission code
     const existingUser = await UserCollection.findOne({ username });
     if (existingUser?.commissionCode) {
-      return res.status(400).json({
-        error: "Commission code already exists",
-        commissionCode: existingUser.commissionCode
-      });
+      await UserCollection.updateOne({_id: req.user._id}, {$set: { 
+        commissionCode: newCommissionCode
+      }});
     }
 
-    const newCommissionCode = `${username.toUpperCase()}_REF`;
 
     // Check if promo code already exists (just in case)
-    const codeExists = await PromoCodeTrackingCollection.findOne({ code: newCommissionCode });
-    if (codeExists) {
-      return res.status(400).json({ error: "Commission code already taken" });
-    }
+    // const codeExists = await PromoCodeTrackingCollection.findOne({ code: newCommissionCode });
+    // if (codeExists) {
+    //   return res.status(400).json({ error: "Commission code already taken" });
+    // }
     // Step 1 create a stripe account
     const stripeAccount = await stripe.accounts.create({
       type: 'express',
@@ -50,8 +51,8 @@ router.post('/create-commission-code', AuthAccountMiddleWare, async (req, res) =
     // Generate a onboarding link 
     const accountLink = await stripe.accountLinks.create({
       account: stripeAccount.id,
-      refresh_url: process.env.REFRESH_URL, // or your real route
-      return_url: process.env.RETURN_URL,
+      refresh_url: `https://connect.stripe.com/setup/e/${stripeAccount.id}`, // or your real route
+      return_url: `${process.env.REFRESH_URL}?apiKey=${req.user.apiKey}`,
       type: 'account_onboarding',
     });
 
@@ -67,17 +68,20 @@ router.post('/create-commission-code', AuthAccountMiddleWare, async (req, res) =
     });
 
     // Update user with commission code
-    await UserCollection.updateOne({ username }, {
+    const result = await UserCollection.updateOne({ _id: req.user._id }, {
       $set: {
-        commissionCode: newCommissionCode, 
-        stripeAccountId: stripeAccount.id
+        commissionCode: newCommissionCode,
+        stripeAccountId: stripeAccount.id,
+        accountLink: accountLink.url
       }
     });
+
+    console.log("Update Result:", result);
 
     return res.status(200).json({
       message: "Commission code created successfully. Any user who uses this code will credit 30% commission to the creator.",
       commissionCode: newCommissionCode, 
-      stripeAccountId: stripeAccount.Id, 
+      stripeAccountId: stripeAccount.id, 
       accountLink: accountLink.url
     });
 
@@ -90,12 +94,73 @@ router.post('/create-commission-code', AuthAccountMiddleWare, async (req, res) =
   }
 });
 
-router.get('/test-login-link/:accountId', async(req, res)=>{
-  const { accountId } = req.params; 
+router.get('/login-link/:accountLink', AuthAccountMiddleWare, async(req, res)=>{
+  const client = await CreateMongoDbConnection();
+  const db = client.db();
+  const PromoCodeTrackingCollection = db.collection(PROMOS_CODE_TRACKING_COLLECTION);
+  const UserCollection = db.collection(USER_COLLECTION);
+
+  const accountId = req.params.accountLink; 
+  console.log('[ACCOUNT ID]: ', accountId); 
+  
   try{
-    const loginLink = await stripe.accounts.createLoginLink(accountId); 
-    res.redirect(loginLink.url); 
+
+    const loginLink = await stripe.accounts.createLoginLink(accountId);     
+    console.log('[LOGIN LINK]: ', loginLink); 
+    if(loginLink){
+      await UserCollection.updateOne({apiKey: req.user.apiKey}, {$set: { 
+        accountLink: loginLink
+      }}); 
+    }
+    
+    return res.status(200).json({ 
+      loginUrl: loginLink.url
+    }) 
+
   }catch(error){
+    if(error.message === 'Cannot create a login link for an account that has not completed onboarding.'){ 
+      const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `https://connect.stripe.com/setup/e/${accountId}`, // or your real route
+      return_url: `${process.env.REFRESH_URL}?apiKey=${req.user.apiKey}`,
+      type: 'account_onboarding',
+    });
+    if(accountLink.url){ 
+      await UserCollection.updateOne({apiKey: req.user.apiKey}, {$set: { 
+        accountLink: accountLink
+      }});
+    }
+
+    return res.status(200).json({ 
+      accountLink: accountLink.url
+    }); 
+    }
+
+    console.error('[ERROR]: ', error.name)
+
+    return res.status(500).json({ 
+      error: error.message
+    })
+  }
+})
+
+router.get('/update-login-link', AuthAccountMiddleWare, async(req, res)=>{
+  try{
+    const { url } = req.query;
+    const { apiKey } = req.user;  
+    const MongoClient = await CreateMongoDbConnection(); 
+    const db = await MongoClient.db(); 
+    const UsersCollection = await db.collection(USER_COLLECTION); 
+
+    const CurrentUser = await UsersCollection.updateOne({apiKey: apiKey}, {$set: { 
+      accountLink: url
+    }}); 
+
+    return res.status(200).json({ 
+      message: "Successfully Updated account Url", 
+      loginUrl: url
+    }); 
+  }catch(error){ 
     return res.status(500).json({ 
       error: error.message
     })
