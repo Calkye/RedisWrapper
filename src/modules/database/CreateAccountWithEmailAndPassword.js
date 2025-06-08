@@ -27,7 +27,6 @@ const CreateAccountWithEmailAndPassword = async(username, password, email, tempA
         password: hashedPassword, 
         apiKey: apiKey, 
         type: 'TempAccount', 
-        Expires: "7 days",
         CreatedAt: new Date()
       }
       : {
@@ -36,7 +35,6 @@ const CreateAccountWithEmailAndPassword = async(username, password, email, tempA
         password: hashedPassword,
         apiKey: apiKey,  
         type: 'default', 
-        Expires: "32 days",
         CreatedAt: new Date()
       };
 

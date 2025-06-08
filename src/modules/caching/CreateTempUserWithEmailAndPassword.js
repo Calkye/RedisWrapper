@@ -23,7 +23,6 @@ const CreateTempUserWithEmailAndPassword = async(username, password, email, temp
       email: email, 
       password: hashedPassword, 
       type: 'TempAccount', 
-      Expires: "7 days",
       CreatedAt: new Date(),
       email_verified: false
     }
@@ -32,16 +31,13 @@ const CreateTempUserWithEmailAndPassword = async(username, password, email, temp
       email: email, 
       password: hashedPassword, 
       type: 'default', 
-      Expires: "32 days",
       CreatedAt: new Date(),
       email_verified: false
     };
 
     const key = `user:${username}`; 
 
-    await client.set(key, JSON.stringify(user), {
-      EX: 60 * 60 * 24 * 7 // 7 days
-    });
+    await client.set(key, JSON.stringify(user));
 
     return { success: true, message: "Successfully created Temp User", source: "Redis"}
   }catch(error){ 

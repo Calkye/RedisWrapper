@@ -28,8 +28,9 @@ function createLimiters() {
     message: { error: "Rate limit exceeded: 2,500 requests per week" },
     keyGenerator: (req) => {
       const auth = req.headers['authorization'];
-      if (!auth) return req.ip; // fallback to IP if no auth header
-      return auth.replace(/^Bearer\s+/i, '').trim(); // only the key part
+      const key = auth ? auth.replace(/^Bearer\s+/i, '').trim() : req.ip;
+      console.log('[Rate limit Key]: ', key); 
+      return key
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -42,8 +43,9 @@ function createLimiters() {
     message: { error: "Rate limit exceeded: 1,000 requests per week" },
     keyGenerator: (req) => {
       const auth = req.headers['authorization'];
-      if (!auth) return req.ip; // fallback to IP if no auth header
-      return auth.replace(/^Bearer\s+/i, '').trim(); // only the key part
+      const key = auth ? auth.replace(/^Bearer\s+/i, '').trim() : req.ip;
+      console.log('[Rate limit Key]: ', key); 
+      return key
     },    
     standardHeaders: true,
     legacyHeaders: false,
@@ -56,8 +58,9 @@ function createLimiters() {
     message: { error: "Rate limit exceeded: 4,500 requests per week" },
     keyGenerator: (req) => {
       const auth = req.headers['authorization'];
-      if (!auth) return req.ip; // fallback to IP if no auth header
-      return auth.replace(/^Bearer\s+/i, '').trim(); // only the key part
+      const key = auth ? auth.replace(/^Bearer\s+/i, '').trim() : req.ip;
+      console.log('[Rate limit Key]: ', key); 
+      return key
     },    
     standardHeaders: true,
     legacyHeaders: false,

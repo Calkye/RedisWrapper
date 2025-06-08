@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(rateLimit({ 
   windowMs: 15 * 60 * 1000, // 15 minutes 
-  max: 5, 
+  max: 15, 
   message: {error: "Too many requests. Please try again later"},
   standardHeaders: true, 
   legacyHeaders: false

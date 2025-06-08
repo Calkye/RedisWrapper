@@ -106,10 +106,11 @@ router.get('/login-link/:accountLink', AuthAccountMiddleWare, async(req, res)=>{
   try{
 
     const loginLink = await stripe.accounts.createLoginLink(accountId);     
+
     console.log('[LOGIN LINK]: ', loginLink); 
     if(loginLink){
       await UserCollection.updateOne({apiKey: req.user.apiKey}, {$set: { 
-        accountLink: loginLink
+        accountLink: loginLink.url
       }}); 
     }
     
@@ -125,9 +126,11 @@ router.get('/login-link/:accountLink', AuthAccountMiddleWare, async(req, res)=>{
       return_url: `${process.env.REFRESH_URL}?apiKey=${req.user.apiKey}`,
       type: 'account_onboarding',
     });
+
+    console.log('Account Link: ', accountLink); 
     if(accountLink.url){ 
       await UserCollection.updateOne({apiKey: req.user.apiKey}, {$set: { 
-        accountLink: accountLink
+        accountLink: accountLink.url
       }});
     }
 

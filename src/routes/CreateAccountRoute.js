@@ -22,7 +22,7 @@ const CreateMongoDbConnection = require('../CreateMongoDbConnection.js');
 const router = express.Router(); 
 router.use(rateLimit({ 
   windowMs: 15 * 60 * 1000, // 15 minutes 
-  max: 5, // Limit each ip to 5 requests 
+  max: 15, // Limit each ip to 5 requests 
   message: { 
     error: "Too many requests. Please try again later"
   }, 

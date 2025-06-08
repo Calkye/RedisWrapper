@@ -39,11 +39,11 @@ app.use(cors({
 }));
 
 
-
+app.use(morgan('dev')); 
 app.use(express.json()); 
 app.use(cookieParser()); 
 
-app.set('trust proxy', 1); // Trust first proxy (Railway/load balancer)
+// app.set('trust proxy', 1); // Trust first proxy (Railway/load balancer)
 
 // Mount routes with base parth eg /api 
 app.use('/api', CreateAccountRoute); 
